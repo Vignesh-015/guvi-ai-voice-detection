@@ -10,6 +10,7 @@ app = FastAPI(title="AI Generated Voice Detection API")
 
 model = joblib.load("voice_detector.pkl")
 
+# IMPORTANT: default key for GUVI tester
 API_KEY = os.getenv("API_KEY", "guvi_secret_key")
 
 def extract_features_from_bytes(audio_bytes):
@@ -26,9 +27,11 @@ def extract_features_from_bytes(audio_bytes):
 @app.post("/detect-voice")
 def detect_voice(
     payload: dict,
-    x_api_key: str = Header(None, alias="x-api-key")
+    x_api_key: str = Header(None, alias="x-api-key"),
+    authorization: str = Header(None)
 ):
-    if x_api_key != API_KEY:
+    # Accept BOTH header styles (GUVI may use either)
+    if x_api_key != API_KEY and authorization != f"Bearer {API_KEY}":
         raise HTTPException(status_code=401, detail="Unauthorized")
 
     try:
