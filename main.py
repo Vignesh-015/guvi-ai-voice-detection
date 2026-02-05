@@ -26,13 +26,9 @@ def extract_features_from_bytes(audio_bytes):
 @app.post("/detect-voice")
 def detect_voice(
     payload: dict,
-    authorization: str = Header(None),
-    x_api_key: str = Header(None)
+    x_api_key: str = Header(None, alias="x-api-key")
 ):
-    # ✅ Accept BOTH auth styles
-    if authorization == f"Bearer {API_KEY}" or x_api_key == API_KEY:
-        pass
-    else:
+    if x_api_key != API_KEY:
         raise HTTPException(status_code=401, detail="Unauthorized")
 
     try:
