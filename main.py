@@ -8,10 +8,8 @@ import librosa
 
 app = FastAPI(title="AI Generated Voice Detection API")
 
-# Load trained model
 model = joblib.load("voice_detector.pkl")
 
-# API Key (safe fallback for deployment)
 API_KEY = os.getenv("API_KEY", "guvi_secret_key")
 
 def extract_features_from_bytes(audio_bytes):
@@ -26,8 +24,15 @@ def extract_features_from_bytes(audio_bytes):
     return np.hstack([mfcc, centroid, zcr, rms]).reshape(1, -1)
 
 @app.post("/detect-voice")
-def detect_voice(payload: dict, authorization: str = Header(None)):
-    if authorization != f"Bearer {API_KEY}":
+def detect_voice(
+    payload: dict,
+    authorization: str = Header(None),
+    x_api_key: str = Header(None)
+):
+    # ✅ Accept BOTH auth styles
+    if authorization == f"Bearer {API_KEY}" or x_api_key == API_KEY:
+        pass
+    else:
         raise HTTPException(status_code=401, detail="Unauthorized")
 
     try:
